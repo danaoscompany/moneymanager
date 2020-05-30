@@ -47,10 +47,23 @@ class User extends CI_Controller {
 				'verified' => intval($user['verified'])
 			));
 		} else {
-			if (sizeof($this->db->get_where('users', array('email' => $email))->result_array()) > 0) {
-				echo json_encode(array(
-					'response_code' => -1
-				));
+			$users = $this->db->get_where('users', array('email' => $email))->result_array();
+			if (sizeof($users) > 0) {
+				$user = $users[0];
+				if ($user['g_uid'] != $googleUid) {
+					echo json_encode(array(
+						'response_code' => -1
+					));
+				} else {
+					echo json_encode(array(
+						'id' => intval($user['id']),
+						'email' => $user['email'],
+						'password' => $user['password'],
+						'sign_in_method' => 'google',
+						'response_code' => 1,
+						'verified' => intval($user['verified'])
+					));
+				}
 			} else {
 				$this->db->insert('users', array(
 					'email' => $email,
