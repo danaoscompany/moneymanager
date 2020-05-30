@@ -7,6 +7,8 @@ class Test extends CI_Controller {
 	}
 	
 	public function email() {
+        __destruct();
+        $this->db->close();
 		$config = array(
     		'protocol' => 'smtp',
     		'smtp_host' => 'mail.ensido.com', 
@@ -32,6 +34,5 @@ class Test extends CI_Controller {
 		{
             show_error($this->email->print_debugger());
         }
-        __destruct();
 	}
 }
