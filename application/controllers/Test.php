@@ -9,11 +9,12 @@ class Test extends CI_Controller {
 	public function email() {
 		$config = array(
     		'protocol' => 'smtp',
-    		'smtp_host' => 'mail.ensido.com', 
-    		'smtp_port' => 587,
+    		'smtp_host' => 'venus.jogjahost.com', 
+    		'smtp_port' => 465,
     		'smtp_user' => 'admin@ensido.com',
     		'smtp_pass' => 'HelloWorld@123',
     		'mailtype' => 'text',
+    		'smtp_protocol' => 'ssl',
     		'smtp_timeout' => '4', 
     		'charset' => 'iso-8859-1',
     		'wordwrap' => TRUE
