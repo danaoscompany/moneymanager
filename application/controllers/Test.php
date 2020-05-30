@@ -34,4 +34,14 @@ class Test extends CI_Controller {
             show_error($this->email->print_debugger());
         }
 	}
+	
+	public function email2() {
+		$to      = 'danaoscompany@gmail.com';
+		$subject = 'the subject';
+		$message = 'hello';
+		$headers = 'From: admin@ensido.com' . "\r\n" .
+    		'Reply-To: admin@ensido.com' . "\r\n" .
+    		'X-Mailer: PHP/' . phpversion();
+		mail($to, $subject, $message, $headers);
+	}
 }
