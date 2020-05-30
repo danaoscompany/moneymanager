@@ -7,32 +7,31 @@ class Test extends CI_Controller {
 	}
 	
 	public function email() {
-		$mail_config['smtp_host'] = 'ssl://smtp.gmail.com';
-$mail_config['smtp_port'] = '465';
-$mail_config['smtp_user'] = 'danaos.apps@gmail.com';
-$mail_config['_smtp_auth'] = TRUE;
-$mail_config['smtp_pass'] = 'PublicVoid123';
-$mail_config['smtp_crypto'] = 'tls';
-$mail_config['protocol'] = 'smtp';
-$mail_config['mailtype'] = 'html';
-$mail_config['send_multipart'] = FALSE;
-$mail_config['charset'] = 'utf-8';
-$mail_config['wordwrap'] = TRUE;
-$this->email->initialize($mail_config);
-
-$this->email->set_newline("\r\n");
-	    $this->load->library('email', $mail_config);
-      $this->email->from('danaos.apps@gmail.com'); // change it to yours
-      $this->email->to('danaoscompany@gmail.com');// change it to yours
-      $this->email->subject('This is subject');
-      $this->email->message('This is message');
-      if($this->email->send())
-     	{
-      	echo 'Email sent.';
-     	}
-     	else
-   		{
-     	show_error($this->email->print_debugger());
-    	}
+		$config = array(
+    		'protocol' => 'smtp',
+    		'smtp_host' => 'venus.jogjahost.com', 
+    		'smtp_port' => 465,
+    		'smtp_user' => 'admin@ensido.com',
+    		'smtp_pass' => 'HelloWorld@123',
+    		'smtp_crypto' => 'ssl',
+    		'mailtype' => 'text',
+    		'smtp_timeout' => '4', 
+    		'charset' => 'iso-8859-1',
+    		'wordwrap' => TRUE
+		);
+		$this->load->library('email', $config);
+        $this->email->set_newline("\r\n");
+        $this->email->from("admin@ensido.com");
+        $this->email->to("danaoscompany@gmail.com");
+        $this->email->subject("This is subject");
+        $this->email->message("This is message");
+        if ($this->email->send()) 
+		{
+            echo 'Email has been sent successfully';
+        } 
+		else 
+		{
+            show_error($this->email->print_debugger());
+        }
 	}
 }
