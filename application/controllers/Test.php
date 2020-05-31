@@ -3,7 +3,7 @@
 class Test extends CI_Controller {
 	
 	public function test2() {
-		echo "Hello";
+		echo "UUID: " . generateUUID();
 	}
 	
 	public function email() {
@@ -43,5 +43,9 @@ class Test extends CI_Controller {
     		'Reply-To: admin@ensido.com' . "\r\n" .
     		'X-Mailer: PHP/' . phpversion();
 		mail($to, $subject, $message, $headers);
+	}
+	
+	public function file() {
+		file_put_contents("test.txt", "Halo dunia");
 	}
 }

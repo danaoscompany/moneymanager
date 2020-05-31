@@ -23,6 +23,14 @@ class Main extends CI_Controller {
 		echo json_encode($this->db->query("SELECT * FROM " . $name . " WHERE `id`=" . $id)->result_array());
 	}
 	
+	public function get_column_by_id() {
+		$name = $this->input->post('name');
+		$columnName = $this->input->post('column_name');
+		$id = intval($this->input->post('id'));
+		$user = $this->db->query("SELECT * FROM " . $name . " WHERE `id`=" . $id)->row_array();
+		echo $user[$columnName];
+	}
+	
 	public function get_by_id_string() {
 		$name = $this->input->post('name');
 		$id = $this->input->post('id');

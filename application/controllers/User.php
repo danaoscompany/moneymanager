@@ -11,6 +11,23 @@ class User extends CI_Controller {
 		echo json_encode($audioBooks);
 	}
 	
+	public function use_promo_code() {
+		$userID = intval($this->input->post('user_id'));
+		$promoCode = $this->input->post('promo_code');
+		$promoCodeObjs = $this->db->get_where('promo_codes', array('code' => $promoCode))->result_array();
+		if (sizeof($promoCodeObjs) > 0) {
+			$promoCodeObj = $promoCodeObjs[0];
+			if (sizeof($this->db->get_where('promo_code_users', array('promo_code_id' => intval($promoCodeObj['id']), 'user_id' => $userID))->result_array()) > 0) {
+				echo json_encode(array('response_code' => -1));
+			} else {
+				$this->db->insert('promo_code_users', array('user_id' => $userID, 'promo_code_id' => intval($promoCodeObj['id'])));
+				echo json_encode(array('response_code' => 1));
+			}
+		} else {
+			echo json_encode(array('response_code' => -2));
+		}
+	}
+	
 	public function get_playlists() {
 		$playlists = $this->db->get('playlists')->result_array();
 		for ($i=0; $i<sizeof($playlists); $i++) {
@@ -32,7 +49,9 @@ class User extends CI_Controller {
 	
 	public function login_with_google() {
 		$googleUid = $this->input->post('google_uid');
+		$name = $this->input->post('name');
 		$email = $this->input->post('email');
+		$profilePictureURL = $this->input->post('profile_picture_url');
 		$users = $this->db->get_where('users', array(
 			'g_uid' => $googleUid
 		))->result_array();
@@ -65,9 +84,14 @@ class User extends CI_Controller {
 					));
 				}
 			} else {
+				$profilePicture = file_get_contents($profilePictureURL);
+				$profilePictureName = $this->generateUUID();
+				file_put_contents('userdata/images/' . $profilePictureName, $profilePicture);
 				$this->db->insert('users', array(
+					'name' => $name,
 					'email' => $email,
 					'g_uid' => $googleUid,
+					'profile_picture' => $profilePictureName,
 					'sign_in_method' => 'google'
 				));
 				$id = intval($this->db->insert_id());
@@ -83,4 +107,26 @@ class User extends CI_Controller {
 			}
 		}
 	}
+	
+	private function generateUUID() {
+    	return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+        // 32 bits for "time_low"
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+
+        // 16 bits for "time_mid"
+        mt_rand( 0, 0xffff ),
+
+        // 16 bits for "time_hi_and_version",
+        // four most significant bits holds version number 4
+        mt_rand( 0, 0x0fff ) | 0x4000,
+
+        // 16 bits, 8 bits for "clk_seq_hi_res",
+        // 8 bits for "clk_seq_low",
+        // two most significant bits holds zero and one for variant DCE1.1
+        mt_rand( 0, 0x3fff ) | 0x8000,
+
+        // 48 bits for "node"
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+    	);
+    }
 }
