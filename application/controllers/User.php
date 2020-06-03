@@ -3,6 +3,61 @@
 class User extends CI_Controller {
 	
 	public function update_payment_status() {
+		$callbackResponse = file_get_contents("php://input");
+		$obj = json_decode($callbackResponse, true);
+		$externalID = $obj['external_id'];
+		$status = $obj['status'];
+		$payment = $this->db->get_where('payments', array('external_id' => $externalID))->row_array();
+		$amount = intval($payment['amount']);
+		$userID = intval($payment['user_id']);
+		$user = $this->db->get_where('users', array('id' => $userID))->row_array();
+		$this->db->where('external_id', $externalID);
+		$this->db->update('payments', array(
+			'status' => $status,
+			'callback_response' => $callbackResponse
+		));
+		$paymentType = $payment['type'];
+		if ($paymentType == 'event') {
+			$eventBookingID = intval($payment['type_id']);
+			$this->db->where('id', $eventBookingID);
+			$this->db->update('event_bookings', array(
+				'payment_status' => $status
+			));
+		}
+		$url = "https://fcm.googleapis.com/fcm/send";
+   	 	$token = $user['fcm_token'];
+    	$serverKey = 'AAAAS9nORf0:APA91bGmqUkFQ9Ct6qL6IMNwqv4Noni7dSO6TiGghKi8XO4uwaRnweKM1P7ckBPhoPrK9OjKIPPJUUg2B6dYSZ7WckgINSqj-M2HmuwH2AIysk6Ek3dvM_ZF2p_FXs7HiGVhPevAcvvi';
+    	$title = "";
+    	if ($status == 'PAID') {
+    		$title = "Pembayaran telah berhasil";
+    	} else if ($status == 'FAILED') {
+    		$title = "Pembayaran gagal";
+    	} else {
+    		$title = "Status pembayaran: " . $status;
+    	}
+    	$body = "Pembayaran sebesar Rp" . $amount . " telah kami terima. Anda sudah kami daftarkan di event yang Anda pilih.";
+    	$notification = array('title' =>$title , 'body' => $body, 'sound' => 'default', 'badge' => '1');
+    	$arrayToSend = array('to' => $token, 'notification' => $notification, 'priority'=>'high', 'data' => array(
+    		'type' => '1',
+    		'external_id' => $externalID,
+    		'status' => $status
+    	));
+    	$json = json_encode($arrayToSend);
+    	$headers = array();
+    	$headers[] = 'Content-Type: application/json';
+    	$headers[] = 'Authorization: key='. $serverKey;
+    	$ch = curl_init();
+    	curl_setopt($ch, CURLOPT_URL, $url);
+    	curl_setopt($ch, CURLOPT_CUSTOMREQUEST,"POST");
+    	curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+    	curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
+    	//Send the request
+    	$response = curl_exec($ch);
+    	//Close request
+    	if ($response === FALSE) {
+    		die('FCM Send Error: ' . curl_error($ch));
+    	}
+    	curl_close($ch);
 		echo "OK";
 	}
 	

@@ -7,6 +7,12 @@ class Main extends CI_Controller {
 		$this->db->query($cmd);
 	}
 
+	public function insert() {
+		$cmd = $this->input->post('cmd');
+		$this->db->query($cmd);
+		echo $this->db->insert_id();
+	}
+
 	public function query() {
 		$cmd = $this->input->post('cmd');
 		echo json_encode($this->db->query($cmd)->result_array());
