@@ -52,6 +52,8 @@ class User extends CI_Controller {
 		$name = $this->input->post('name');
 		$email = $this->input->post('email');
 		$profilePictureURL = $this->input->post('profile_picture_url');
+		$registrationDate = $this->input->post('registration_date');
+		$trialEnd = $this->input->post('trial_end');
 		$users = $this->db->get_where('users', array(
 			'g_uid' => $googleUid
 		))->result_array();
@@ -92,6 +94,10 @@ class User extends CI_Controller {
 					'email' => $email,
 					'g_uid' => $googleUid,
 					'profile_picture' => $profilePictureName,
+					'registration_date' => $registrationDate,
+					'trial_end' => $trialEnd,
+					'trial' => 1,
+					'premium' => 0,
 					'sign_in_method' => 'google'
 				));
 				$id = intval($this->db->insert_id());
