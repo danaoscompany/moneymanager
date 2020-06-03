@@ -2,6 +2,10 @@
 
 class User extends CI_Controller {
 	
+	public function update_payment_status() {
+		echo "OK";
+	}
+	
 	public function get_audiobooks() {
 		$audioBooks = $this->db->get('audiobooks')->result_array();
 		for ($i=0; $i<sizeof($audioBooks); $i++) {
