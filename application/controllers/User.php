@@ -1,6 +1,50 @@
 <?php
 
 class User extends CI_Controller {
+
+	public function get_audiobook_by_id() {
+		$id = intval($this->input->post('id'));
+		$audioBook = $this->db->get_where('audiobooks', array('id' => $id))->row_array();
+		$audioBook['vendor'] = $this->db->get_where('audiobook_vendors', array('id' => intval($audioBook['vendor_id'])))->row_array()['name'];
+		echo json_encode($audioBook);
+	}
+
+	public function book_event() {
+		$userID = intval($this->input->post('user_id'));
+		$eventID = intval($this->input->post('event_id'));
+		$name = $this->input->post('name');
+		$phone = $this->input->post('phone');
+		$gender = $this->input->post('gender');
+		$birthday = $this->input->post('birthday');
+		$address = $this->input->post('address');
+		$province = $this->input->post('province');
+		$bookings = $this->db->get_where('event_bookings', array('user_id' => $userID, 'event_id' => $eventID))->result_array();
+		if (sizeof($bookings) > 0) {
+			$booking = $bookings[0];
+			$this->db->where('id', intval($booking['id']));
+			$this->db->update('event_bookings', array(
+				'name' => $name,
+				'phone' => $phone,
+				'gender' => $gender,
+				'birthday' => $birthday,
+				'address' => $address,
+				'province' => $province
+			));
+			echo intval($booking['id']);
+		} else {
+			$this->db->insert('event_bookings', array(
+				'user_id' => $userID,
+				'event_id' => $eventID,
+				'name' => $name,
+				'phone' => $phone,
+				'gender' => $gender,
+				'birthday' => $birthday,
+				'address' => $address,
+				'province' => $province
+			));
+			echo $this->db->insert_id();
+		}
+	}
 	
 	public function update_payment_status() {
 		$callbackResponse = file_get_contents("php://input");
@@ -23,6 +67,22 @@ class User extends CI_Controller {
 			$this->db->update('event_bookings', array(
 				'payment_status' => $status
 			));
+		} else if ($paymentType == 'delivery') {
+			$deliveryID = intval($payment['type_id']);
+			$this->db->where('id', $deliveryID);
+			$this->db->update('deliveries', array(
+				'payment_status' => $status
+			));
+		} else if ($paymentType == 'audiobook') {
+			$audiobookPaymentID = intval($payment['type_id']);
+			$this->db->where('id', $audiobookPaymentID);
+			$completed = 0;
+			if ($status == 'PAID') {
+				$completed = 1;
+			}
+			$this->db->update('audiobook_payments', array(
+				'completed' => $completed
+			));
 		}
 		$url = "https://fcm.googleapis.com/fcm/send";
    	 	$token = $user['fcm_token'];
@@ -35,7 +95,13 @@ class User extends CI_Controller {
     	} else {
     		$title = "Status pembayaran: " . $status;
     	}
-    	$body = "Pembayaran sebesar Rp" . $amount . " telah kami terima. Anda sudah kami daftarkan di event yang Anda pilih.";
+    	if ($paymentType == 'event') {
+    		$body = "Pembayaran sebesar Rp" . $amount . " telah kami terima. Anda sudah kami daftarkan di event yang Anda pilih.";
+    	} else if ($paymentType == 'audiobook') {
+    		$body = "Pembayaran sebesar Rp" . $amount . " telah kami terima. Anda dapat menikmati audiobook yang sudah Anda beli.";
+    	} else if ($paymentType == 'delivery') {
+    		$body = "Pembayaran sebesar Rp" . $amount . " telah kami terima. Paket akan segera diantarkan ke alamat penerima.";
+    	}
     	$notification = array('title' =>$title , 'body' => $body, 'sound' => 'default', 'badge' => '1');
     	$arrayToSend = array('to' => $token, 'notification' => $notification, 'priority'=>'high', 'data' => array(
     		'type' => '1',
